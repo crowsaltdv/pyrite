@@ -1,9 +1,0 @@
-{
-  // Cloudflare Workers config: serves the static site that `node cloudflare-build.js` puts in ./dist.
-  // The name must match the project name in the Cloudflare dashboard.
-  "name": "pyrites",
-  "compatibility_date": "2025-10-01",
-  "assets": {
-    "directory": "./dist"
-  }
-}

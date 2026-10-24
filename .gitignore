@@ -1,3 +1,7 @@
+# The games live in S3 (served through CloudFront), not in this repo.
+# Keep a copy on your PC if you like; git will never pick it up.
+/games/
+
 .claude/
-dist/
-.wrangler/
+.DS_Store
+Thumbs.db
