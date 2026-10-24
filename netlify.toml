@@ -1,0 +1,9 @@
+# pyrite is plain static files: no build step, serve the folder as-is.
+[build]
+  publish = "."
+
+# the game files never change between deploys, so let browsers keep them for a day
+[[headers]]
+  for = "/games/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"

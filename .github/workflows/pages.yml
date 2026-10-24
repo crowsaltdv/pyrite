@@ -1,0 +1,68 @@
+name: Publish site to GitHub Pages
+
+# Publishes only the website itself (about 150 KB of files). GitHub Pages cannot hold the games
+# (its limit is 1 GB), so they live in an S3 bucket behind a CDN (CloudFront), and the site finds
+# them through the GAMES_BASE repository variable:
+#   Settings > Secrets and variables > Actions > Variables > New repository variable
+#   GAMES_BASE = https://YOUR-ID.cloudfront.net/games/
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "games/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # fetch just these files, not the multi-gigabyte games folder
+      - name: Check out the site files
+        uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            /index.html
+            /style.css
+            /gate.css
+            /app.js
+            /config.js
+            /games.js
+            /favicon.ico
+          sparse-checkout-cone-mode: false
+
+      - name: Assemble the site
+        env:
+          GAMES_BASE: ${{ vars.GAMES_BASE }}
+        run: |
+          case "$GAMES_BASE" in
+            https://*) ;;
+            *) echo "::error::Set the GAMES_BASE repository variable to your CloudFront address, e.g. https://d1234abcd.cloudfront.net/games/"; exit 1 ;;
+          esac
+          mkdir _site
+          cp index.html style.css gate.css app.js games.js favicon.ico _site/
+          # the copy in the repo points at ./games for running locally; the published one points at the CDN
+          printf 'window.PYRITE = { gamesBase: "%s" };\n' "$GAMES_BASE" > _site/config.js
+          touch _site/.nojekyll
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Publish
+        id: deployment
+        uses: actions/deploy-pages@v4
