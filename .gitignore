@@ -1,6 +1,9 @@
-# The games live in S3 (served through CloudFront), not in this repo.
+# The games live in an S3 bucket, not in this repo.
 # Keep a copy on your PC if you like; git will never pick it up.
 /games/
+
+# built by make-single-file.py; rebuild it any time instead of committing it
+/pyrite.html
 
 .claude/
 .DS_Store

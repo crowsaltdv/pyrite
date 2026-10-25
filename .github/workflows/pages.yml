@@ -1,10 +1,11 @@
 name: Publish site to GitHub Pages
 
 # Publishes only the website itself (about 150 KB of files). GitHub Pages cannot hold the games
-# (its limit is 1 GB), so they live in an S3 bucket behind a CDN (CloudFront), and the site finds
-# them through the GAMES_BASE repository variable:
+# (its limit is 1 GB), so they live in an S3 bucket, and the site finds them through the
+# GAMES_BASE repository variable:
 #   Settings > Secrets and variables > Actions > Variables > New repository variable
-#   GAMES_BASE = https://YOUR-ID.cloudfront.net/games/
+#   GAMES_BASE = https://YOUR-BUCKET.s3.YOUR-REGION.amazonaws.com/games/
+# (or the address of a CDN in front of that bucket, if you add one later). See HOSTING.md.
 
 on:
   push:
@@ -50,7 +51,11 @@ jobs:
         run: |
           case "$GAMES_BASE" in
             https://*) ;;
-            *) echo "::error::Set the GAMES_BASE repository variable to your CloudFront address, e.g. https://d1234abcd.cloudfront.net/games/"; exit 1 ;;
+            *) echo "::error::Set the GAMES_BASE repository variable to the web address of your games folder, e.g. https://YOUR-BUCKET.s3.YOUR-REGION.amazonaws.com/games/  (see HOSTING.md)"; exit 1 ;;
+          esac
+          # the address goes into a JavaScript file, so allow only characters that belong in a plain web address
+          case "$GAMES_BASE" in
+            *[!A-Za-z0-9._~:/%+@=,-]*) echo "::error::GAMES_BASE has a character that isn't allowed in the address (a space, quote or backslash, for example). Re-enter it exactly as shown in HOSTING.md."; exit 1 ;;
           esac
           mkdir _site
           cp index.html style.css gate.css app.js games.js favicon.ico _site/
@@ -61,6 +66,20 @@ jobs:
           V="${GITHUB_SHA::7}"
           sed -i -E "s#(href|src)=\"(style\.css|gate\.css|config\.js|games\.js|app\.js)\"#\1=\"\2?v=$V\"#g" _site/index.html
           grep -q "style.css?v=$V" _site/index.html || { echo "::error::could not stamp the asset links in index.html"; exit 1; }
+
+      # a warning, not a failure: the site should still publish if the games host is briefly down
+      - name: Check the games host answers
+        env:
+          GAMES_BASE: ${{ vars.GAMES_BASE }}
+        run: |
+          ID="$(grep -oE '"id":"[^"]+"' _site/games.js | head -1 | cut -d'"' -f4)"
+          URL="${GAMES_BASE%/}/${ID}/index.html"
+          CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$URL" || true)"
+          if [ "$CODE" = "200" ]; then
+            echo "The games host is answering: $URL"
+          else
+            echo "::warning::The games host answered '$CODE' for $URL. The site will publish, but games won't open until that address works. Are the games uploaded, and is the bucket's games/ folder public? (see HOSTING.md)"
+          fi
 
       - name: Upload the site
         uses: actions/upload-pages-artifact@v3
