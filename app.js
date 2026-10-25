@@ -77,7 +77,7 @@
 
   const countText = () => (norm(input.value)
     ? fmt(shown.length) + " of " + fmt(alpha.length)
-    : fmt(alpha.length) + " games");
+    : fmt(alpha.length) + " projects");
 
   // a short message in the count line, then back to the count
   let flashTimer = 0;

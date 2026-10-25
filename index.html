@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="gate.css">
   <script>
     // Every visit starts on the cover page below. When pyrite is itself embedded (the about:blank
-    // shield) there is nothing to hide from, so skip straight to the games.
+    // shield) there is nothing to hide from, so skip straight to the projects.
     try { if (window.top !== window.self) document.documentElement.classList.remove("gated"); }
     catch (e) { document.documentElement.classList.remove("gated"); }
   </script>
@@ -164,14 +164,14 @@
 
       <label class="search gilt">
         <svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
-        <input id="q" type="search" placeholder="search games" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search games">
+        <input id="q" type="search" placeholder="search projects" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search projects">
         <kbd aria-hidden="true">/</kbd>
         <button class="clear" id="clear" type="button" aria-label="Clear search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
         </button>
       </label>
 
-      <div class="sort gilt" role="group" aria-label="Sort games">
+      <div class="sort gilt" role="group" aria-label="Sort projects">
         <span class="thumb" aria-hidden="true"></span>
         <button type="button" data-sort="az" aria-pressed="true">A–Z</button>
         <button type="button" data-sort="random" aria-pressed="false">
@@ -186,9 +186,9 @@
 
   <main>
     <div class="grid" id="grid"></div>
-    <p class="empty" id="empty" hidden>no games found</p>
+    <p class="empty" id="empty" hidden>no projects found</p>
     <div id="sentinel" aria-hidden="true"></div>
-    <noscript><p class="nojs">pyrite needs JavaScript to list the games.</p></noscript>
+    <noscript><p class="nojs">pyrite needs JavaScript to list the projects.</p></noscript>
   </main>
 
   <section class="player" id="player" role="dialog" aria-modal="true" aria-labelledby="p-title" hidden>
@@ -203,7 +203,7 @@
           <svg class="i-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
           <svg class="i-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>
         </button>
-        <button class="pbtn" id="p-close" type="button" title="Back to games" aria-label="Back to games">
+        <button class="pbtn" id="p-close" type="button" title="Back to projects" aria-label="Back to projects">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
         </button>
       </div>

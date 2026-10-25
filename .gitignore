@@ -4,6 +4,8 @@
 
 # built by make-single-file.py; rebuild it any time instead of committing it
 /pyrite.html
+# the games address make-single-file.py found last time
+/.games-base
 
 .claude/
 .DS_Store

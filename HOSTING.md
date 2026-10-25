@@ -129,6 +129,33 @@ You're done. ✦
 
 ---
 
+# A single file you can double-click (pyrite.html)
+
+`make-single-file.py` bundles the whole site into one file, `pyrite.html`, that you can double-click, put on a USB stick or send to a friend. The games aren't inside it: it loads them from your S3 bucket, so it needs the internet.
+
+```
+python make-single-file.py
+```
+
+That's all. It finds your games address by itself and tells you where it found it:
+
+```
+wrote ...\pyrite.html (141 KB)
+Games address: https://YOUR-BUCKET.s3.YOUR-REGION.amazonaws.com/games/
+  found in: the GAMES_BASE repository variable on GitHub
+  OK: the games host answers.
+```
+
+It looks in this order and uses the first that works: an address you type after the command, the `GAMES_BASE` environment variable, the `GAMES_BASE` variable on GitHub (this needs the `gh` tool, which you're logged in to), the address your published site uses, and finally the address it saved last time (in `.games-base`, which git ignores). So it also keeps working offline after the first time.
+
+- **Run it again** whenever you change the site, or move the games to a new host.
+- **Games next to the file instead** (no S3): `python make-single-file.py --local`.
+- **Give it an address by hand** (it remembers it): `python make-single-file.py https://YOUR-BUCKET.s3.YOUR-REGION.amazonaws.com/games/`
+- `pyrite.html` is rebuilt whenever you like, so git ignores it; don't commit it.
+- Everyone who opens the file downloads games from your bucket, which counts towards the download costs below.
+
+---
+
 # Keeping an eye on cost
 
 S3 is cheap to store 3.5 GB, but **you pay when people download games**. AWS says the first 100 GB a month of data out to the internet is free (check your account's current terms), and after that it's about $0.09 per GB. A game can be tens of MB, so a very popular site could pass the free amount.
@@ -140,7 +167,7 @@ S3 is cheap to store 3.5 GB, but **you pay when people download games**. AWS say
 # Day to day
 
 - **Added or changed games?** Update `games.js` as you normally do, run step 6 again (it only uploads what's new or changed), then push `games.js`.
-- **Moved the games to a different host?** Change the variable: `gh variable set GAMES_BASE --repo crowsaltdv/pyrite --body "NEW-ADDRESS"`, then `gh workflow run pages.yml --repo crowsaltdv/pyrite`.
+- **Moved the games to a different host?** Change the variable: `gh variable set GAMES_BASE --repo crowsaltdv/pyrite --body "NEW-ADDRESS"`, then `gh workflow run pages.yml --repo crowsaltdv/pyrite`, then rebuild the single file with `python make-single-file.py`.
 - **Want to take the games offline quickly?** In the S3 console open the bucket → **Permissions → Bucket policy** → delete the `PublicReadGames` statement. The games stop loading at once.
 - **Run the site on your own PC** (the games folder next to the site, no internet needed): `python serve.py`, or double-click `start-pyrite.bat`. The `config.js` in the repository still says `games/`, which is what makes that work.
 
@@ -165,6 +192,8 @@ S3 is cheap to store 3.5 GB, but **you pay when people download games**. AWS say
 | The script says the bucket **already has a policy** | It left it alone on purpose. Either add the `PublicReadGames` statement it printed to your existing policy in the S3 console, or run again with `-ReplacePolicy` to replace the whole policy with just that one. |
 | PowerShell says running scripts is disabled | Use the exact command in step 5: the `-ExecutionPolicy Bypass` part is what allows it. |
 | The site still shows old games or an old look after a deploy | Hard-refresh the page (Ctrl + F5). The workflow stamps the file links so this is rare. |
+| The site opens, but no games or pictures load (cards show only gold letters), and the page's `config.js` says `gamesBase: "games/"` | Two things published the site and GitHub's own built-in one finished last, putting the raw files live. This can happen when you set up a custom domain while Pages is still on "Deploy from a branch". In **Settings → Pages**, make sure **Source** says **GitHub Actions**, then rebuild with `gh workflow run pages.yml --repo crowsaltdv/pyrite`. You can see what's live at `https://YOUR-SITE/config.js`: it should show your S3 address. |
+| Git says your push was **rejected** after you changed settings on GitHub | GitHub itself added a commit (setting a custom domain makes it add a file called `CNAME`). Run `git pull`, then push again. |
 
 ```
 .github/workflows/pages.yml    builds the site and publishes it, reading GAMES_BASE
