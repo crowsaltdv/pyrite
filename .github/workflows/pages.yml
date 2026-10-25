@@ -57,6 +57,10 @@ jobs:
           # the copy in the repo points at ./games for running locally; the published one points at the CDN
           printf 'window.PYRITE = { gamesBase: "%s" };\n' "$GAMES_BASE" > _site/config.js
           touch _site/.nojekyll
+          # stamp the css/js links with this commit, so a browser can never mix a new page with an old cached stylesheet
+          V="${GITHUB_SHA::7}"
+          sed -i -E "s#(href|src)=\"(style\.css|gate\.css|config\.js|games\.js|app\.js)\"#\1=\"\2?v=$V\"#g" _site/index.html
+          grep -q "style.css?v=$V" _site/index.html || { echo "::error::could not stamp the asset links in index.html"; exit 1; }
 
       - name: Upload the site
         uses: actions/upload-pages-artifact@v3
